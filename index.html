@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>长图生成器 - 封面与长文排版工具</title>
+    <link href="fonts/fonts.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 60px 80px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 42px;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 48px;
+            line-height: 1.6;
+        }
+
+        .tools-container {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tool-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px 32px;
+            width: 280px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            text-decoration: none;
+            display: block;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .tool-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .tool-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .tool-desc {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 48px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 24px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .tools-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tool-card {
+                width: 100%;
+                max-width: 320px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>长图生成器</h1>
+        <p class="subtitle">专业的小红书封面和长文排版工具，轻松制作精美的社交媒体图片</p>
+
+        <div class="tools-container">
+            <a href="封面生成器.html" class="tool-card">
+                <span class="tool-icon">🎨</span>
+                <div class="tool-title">封面生成器</div>
+                <div class="tool-desc">制作精美的小红书封面卡片，支持自定义配色、图片上传和多种样式</div>
+            </a>
+
+            <a href="长文排版器.html" class="tool-card">
+                <span class="tool-icon">📝</span>
+                <div class="tool-title">长文排版器</div>
+                <div class="tool-desc">将Markdown内容自动分页排版，导出为精美的长图，支持自定义品牌</div>
+            </a>
+        </div>
+
+        <div class="footer">
+            由 <a href="https://github.com" target="_blank">扩展思维社</a> 精心打造 · 开源免费
+        </div>
+    </div>
+</body>
+
+</html>
