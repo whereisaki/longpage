@@ -936,10 +936,6 @@
                     <button onclick="resetTextColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
                 </div>
             </div>
-            <div>
-                <label>配色方案</label>
-                <div class="scheme-buttons" id="bodySchemes"></div>
-            </div>
             <button class="export-btn" onclick="exportAllPages()">↓ 导出全部页面 PNG</button>
             <div style="font-size:11px;color:#555;text-align:center;" id="exportStatus"></div>
         </div>
@@ -981,7 +977,6 @@
         };
 
         let currentCoverScheme = 'blackPure';
-        let currentBodyScheme = 'warmPaper';
         let bodyFontSize = 14;
         let bodyLineHeight = 1.9;
         let paragraphSpacing = 8;
@@ -1012,30 +1007,7 @@
         });
 
         function initSchemeButtons() {
-            const bodyContainer = document.getElementById('bodySchemes');
-            Object.entries(BODY_SCHEMES).forEach(([key, s]) => {
-                const btn = document.createElement('button');
-                btn.className = 'scheme-btn' + (key === currentBodyScheme ? ' active' : '');
-                btn.textContent = s.name;
-                btn.onclick = () => {
-                    currentBodyScheme = key;
-                    bodyContainer.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-
-                    // Reset custom colors when switching schemes
-                    customBgColor = null;
-                    customTextColor = null;
-
-                    // Update color inputs to match new scheme
-                    document.getElementById('customBgColor').value = s.bg;
-                    document.getElementById('customBgColorText').value = s.bg;
-                    document.getElementById('customTextColor').value = s.text;
-                    document.getElementById('customTextColorText').value = s.text;
-
-                    updateBody();
-                };
-                bodyContainer.appendChild(btn);
-            });
+            // 已移除配色方案按钮
         }
 
         // ===== TAB SWITCH =====
@@ -1374,28 +1346,28 @@
                 }
             }
 
-            // Use custom colors if set, otherwise use scheme colors
-            const bg = customBgColor || bs.bg;
-            const text = customTextColor || bs.text;
+            // Use custom colors if set, otherwise use default colors
+            const bg = customBgColor || '#faf8f5';
+            const text = customTextColor || '#1a1a1a';
 
             const preview = document.getElementById('previewArea');
             preview.innerHTML = pages.map((content, i) => `
             <div class="body-card" style="background:${bg};color:${text};font-size:${bodyFontSize}px;font-family:${fontFamily};"
                  data-page="${i}">
-                <div class="page-header"><span style="color:${bs.headerAccent};font-size:${headerFontSize}px;">${headerText}</span></div>
+                <div class="page-header"><span style="color:#bbb;font-size:${headerFontSize}px;">${headerText}</span></div>
                 <div class="page-content">${content}</div>
-                <div class="page-footer" style="border-color:${bs.border}">
-                    <span class="brand-mark" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${footerText}</span>
-                    ${displayDate ? `<span class="date-mark" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${displayDate}</span>` : `<span class="page-num" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${String(i + 1).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}</span>`}
+                <div class="page-footer" style="border-color:#e0dcd5">
+                    <span class="brand-mark" style="color:#bbb;font-size:${footerFontSize}px;">${footerText}</span>
+                    ${displayDate ? `<span class="date-mark" style="color:#bbb;font-size:${footerFontSize}px;">${displayDate}</span>` : `<span class="page-num" style="color:#bbb;font-size:${footerFontSize}px;">${String(i + 1).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}</span>`}
                 </div>
             </div>
         `).join('');
 
-            // Apply scheme colors and typography to inner elements
+            // Apply colors and typography to inner elements
             preview.querySelectorAll('.body-card').forEach(card => {
-                card.querySelectorAll('blockquote').forEach(bq => { bq.style.background = bs.quote; bq.style.borderColor = bs.border; });
-                card.querySelectorAll('blockquote p').forEach(p => { p.style.color = bs.sub; });
-                card.querySelectorAll('hr').forEach(hr => { hr.style.background = bs.border; });
+                card.querySelectorAll('blockquote').forEach(bq => { bq.style.background = '#f3f0eb'; bq.style.borderColor = '#d4cfc7'; });
+                card.querySelectorAll('blockquote p').forEach(p => { p.style.color = '#555'; });
+                card.querySelectorAll('hr').forEach(hr => { hr.style.background = '#e0dcd5'; });
                 card.querySelectorAll('p').forEach(p => {
                     if (!p.closest('blockquote')) {
                         p.style.color = text;
@@ -1624,17 +1596,15 @@
         }
 
         function resetBgColor() {
-            const bs = BODY_SCHEMES[currentBodyScheme];
-            document.getElementById('customBgColor').value = bs.bg;
-            document.getElementById('customBgColorText').value = bs.bg;
+            document.getElementById('customBgColor').value = '#faf8f5';
+            document.getElementById('customBgColorText').value = '#faf8f5';
             customBgColor = null;
             updateBody();
         }
 
         function resetTextColor() {
-            const bs = BODY_SCHEMES[currentBodyScheme];
-            document.getElementById('customTextColor').value = bs.text;
-            document.getElementById('customTextColorText').value = bs.text;
+            document.getElementById('customTextColor').value = '#1a1a1a';
+            document.getElementById('customTextColorText').value = '#1a1a1a';
             customTextColor = null;
             updateBody();
         }
