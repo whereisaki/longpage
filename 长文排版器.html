@@ -1012,6 +1012,7 @@
             marked.setOptions({
                 breaks: true,
                 gfm: true,
+                sanitize: false,
             });
         });
 
@@ -1325,7 +1326,6 @@
             let html = marked.parse(md);
             html = fixCJKBrackets(html);
             const pages = paginateContent(html);
-            const bs = BODY_SCHEMES[currentBodyScheme];
             const headerText = document.getElementById('headerBrand').value.trim() || '长图生成器';
             const footerText = document.getElementById('footerBrand').value.trim() || '仅个人使用';
             const fontFamily = document.getElementById('fontFamily').value;
