@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Insight 参考 · 图片生成器</title>
+    <title>长图生成器</title>
     <link
         href="fonts/fonts.css"
         rel="stylesheet">
@@ -828,99 +828,15 @@
 <body>
     <!-- LEFT SIDEBAR -->
     <aside class="sidebar">
-        <h1>Insight 参考</h1>
-        <div class="brand">图片生成器 · 扩展思维社</div>
-
-        <!-- TABS -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="cover" onclick="switchTab('cover')">封面</button>
-            <button class="tab-btn" data-tab="body" onclick="switchTab('body')">正文排版</button>
-        </div>
-
-        <!-- COVER TAB -->
-        <div class="tab-content active" id="tab-cover">
-            <div>
-                <label>期数标识</label>
-                <input type="text" id="issueNum" placeholder="Insight 参考 · 003" oninput="updateCover()">
-            </div>
-            <div>
-                <label>主标题</label>
-                <textarea id="coverTitle" placeholder="赚到第一块钱之前&#10;你不需要任何准备" oninput="updateCover()"></textarea>
-            </div>
-            <div>
-                <label>副标题</label>
-                <textarea id="coverSub" placeholder="一个创业教父 · 一个风险思想家&#10;一个艺术家 · 一个罗马政治家"
-                    oninput="updateCover()"></textarea>
-            </div>
-
-            <!-- Directory Topics -->
-            <div>
-                <label>本期筛选（目录）</label>
-                <div style="display:flex;flex-direction:column;gap:6px;">
-                    <div style="display:flex;gap:4px;">
-                        <input type="text" id="topic1" placeholder="标题 1" style="flex:1;" oninput="updateCover()">
-                        <input type="text" id="author1" placeholder="来源" style="width:90px;" oninput="updateCover()">
-                    </div>
-                    <div style="display:flex;gap:4px;">
-                        <input type="text" id="topic2" placeholder="标题 2" style="flex:1;" oninput="updateCover()">
-                        <input type="text" id="author2" placeholder="来源" style="width:90px;" oninput="updateCover()">
-                    </div>
-                    <div style="display:flex;gap:4px;">
-                        <input type="text" id="topic3" placeholder="标题 3" style="flex:1;" oninput="updateCover()">
-                        <input type="text" id="author3" placeholder="来源" style="width:90px;" oninput="updateCover()">
-                    </div>
-                    <div style="display:flex;gap:4px;">
-                        <input type="text" id="topic4" placeholder="标题 4" style="flex:1;" oninput="updateCover()">
-                        <input type="text" id="author4" placeholder="来源" style="width:90px;" oninput="updateCover()">
-                    </div>
-                </div>
-            </div>
-            <!-- Legacy section removed -->
-            <div>
-                <label>人物图片（最多4张）</label>
-                <div class="upload-zone" id="uploadZone">
-                    点击或拖拽上传人物图片
-                    <div class="hint">支持任意比例，拖拽调整位置</div>
-                    <input type="file" multiple accept="image/*" onchange="handleImageUpload(event)">
-                </div>
-                <div class="image-previews" id="imagePreviews"></div>
-
-                <!-- Image Controls Panel -->
-                <div id="imageControls">
-                    <div class="control-row" style="margin-bottom:12px;color:#fff;font-size:12px;font-weight:bold;">
-                        选中图片设置
-                    </div>
-                    <div class="control-row">
-                        <label>缩放</label>
-                        <input type="range" min="0.3" max="4.0" step="0.1" id="ctrlScale"
-                            oninput="updateImage('scale', this.value)">
-                        <span id="valScale">1.0</span>
-                    </div>
-                    <div class="control-row">
-                        <label>圆角</label>
-                        <input type="range" min="0" max="50" step="1" id="ctrlRadius"
-                            oninput="updateImage('radius', this.value)">
-                        <span id="valRadius">4</span>
-                    </div>
-                    <button class="btn-delete" onclick="deleteSelectedImage()">移除选中图片</button>
-                    <div style="font-size:10px;color:#666;margin-top:8px;text-align:center;">
-                        提示：点击图片选中，拖拽移动
-                    </div>
-                </div>
-            </div>
-            <div>
-                <label>配色方案</label>
-                <div class="scheme-buttons" id="coverSchemes"></div>
-            </div>
-            <button class="export-btn" onclick="exportCover()">↓ 导出封面 PNG (1080×1440)</button>
-        </div>
+        <h1>长图生成器</h1>
+        <div class="brand">仅个人使用</div>
 
         <!-- BODY TAB -->
-        <div class="tab-content" id="tab-body">
+        <div class="tab-content active" id="tab-body">
             <div style="display:flex;gap:8px;">
                 <div style="flex:1">
                     <label>页眉文字</label>
-                    <input type="text" id="headerBrand" placeholder="Insight 参考" oninput="updateBody()">
+                    <input type="text" id="headerBrand" placeholder="长图生成器" oninput="updateBody()">
                 </div>
                 <div style="width:80px;">
                     <label>字号</label>
@@ -930,7 +846,7 @@
             <div style="display:flex;gap:8px;">
                 <div style="flex:1">
                     <label>页脚署名</label>
-                    <input type="text" id="footerBrand" placeholder="扩展思维社" oninput="updateBody()">
+                    <input type="text" id="footerBrand" placeholder="仅个人使用" oninput="updateBody()">
                 </div>
                 <div style="width:80px;">
                     <label>字号</label>
@@ -1083,7 +999,6 @@
         // ===== INIT =====
         window.addEventListener('DOMContentLoaded', () => {
             initSchemeButtons();
-            updateCover();
 
             // Initialize date picker to today
             const today = new Date();
@@ -1097,20 +1012,6 @@
         });
 
         function initSchemeButtons() {
-            const coverContainer = document.getElementById('coverSchemes');
-            Object.entries(SCHEMES).forEach(([key, s]) => {
-                const btn = document.createElement('button');
-                btn.className = 'scheme-btn' + (key === currentCoverScheme ? ' active' : '');
-                btn.textContent = s.name;
-                btn.onclick = () => {
-                    currentCoverScheme = key;
-                    coverContainer.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    updateCover();
-                };
-                coverContainer.appendChild(btn);
-            });
-
             const bodyContainer = document.getElementById('bodySchemes');
             Object.entries(BODY_SCHEMES).forEach(([key, s]) => {
                 const btn = document.createElement('button');
@@ -1142,8 +1043,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
-            if (tab === 'cover') updateCover();
-            else updateBody();
+            updateBody();
         }
 
         // ===== COVER =====
@@ -1445,8 +1345,8 @@
             html = fixCJKBrackets(html);
             const pages = paginateContent(html);
             const bs = BODY_SCHEMES[currentBodyScheme];
-            const headerText = document.getElementById('headerBrand').value.trim() || 'Insight 参考';
-            const footerText = document.getElementById('footerBrand').value.trim() || '扩展思维社';
+            const headerText = document.getElementById('headerBrand').value.trim() || '长图生成器';
+            const footerText = document.getElementById('footerBrand').value.trim() || '仅个人使用';
             const fontFamily = document.getElementById('fontFamily').value;
             const headerFontSize = document.getElementById('headerFontSize').value || 9;
             const footerFontSize = document.getElementById('footerFontSize').value || 9;
