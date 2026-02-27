@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Insight 参考 · 图片生成器</title>
+    <link
+        href="fonts/fonts.css"
+        rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            background: #111;
+            font-family: 'Noto Sans SC', sans-serif;
+            min-height: 100vh;
+            color: #ccc;
+        }
+
+        /* ===== LEFT SIDEBAR ===== */
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            background: #1a1a1a;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            max-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .sidebar h1 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .sidebar .brand {
+            font-size: 11px;
+            color: #555;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 8px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .tab-btn:hover {
+            color: #aaa;
+        }
+
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* Form elements */
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        /* Image upload */
+        .upload-zone {
+            border: 1px dashed #444;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            color: #555;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: #888;
+            color: #888;
+        }
+
+        .upload-zone input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-zone .hint {
+            font-size: 11px;
+            margin-top: 4px;
+            color: #444;
+        }
+
+        .image-previews {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .img-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 2px solid #333;
+            position: relative;
+        }
+
+        .img-thumb-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .img-thumb-wrap .remove-btn {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            background: #e74c3c;
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .img-name-input {
+            width: 56px;
+            text-align: center;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #aaa;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* Color scheme buttons */
+        .scheme-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .scheme-btn {
+            padding: 8px 4px;
+            background: #111;
+            color: #666;
+            border: 1px solid #2a2a2a;
+            border-radius: 2px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scheme-btn:hover {
+            border-color: #444;
+            color: #888;
+        }
+
+        .scheme-btn.active {
+            background: #f7f5f1;
+            color: #0d0d0d;
+            border-color: #f7f5f1;
+        }
+
+        /* Export button */
+        .export-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            font-size: 14px;
+            transition: opacity 0.2s;
+            margin-top: 8px;
+        }
+
+        .export-btn:hover {
+            opacity: 0.85;
+        }
+
+        .export-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ===== RIGHT PREVIEW ===== */
+        .preview-area {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px;
+            overflow-y: auto;
+            max-height: 100vh;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== COVER CARD ===== */
+        .cover-card {
+            width: 360px;
+            height: 480px;
+            position: relative;
+            overflow: hidden;
+            background: var(--card-bg, #0d0d0d);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 32px 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .cover-top {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 20;
+        }
+
+        .cover-rule {
+            width: 28px;
+            height: 1px;
+            background: var(--card-rule, #2a2a2a);
+            margin-bottom: 12px;
+        }
+
+        .cover-issue {
+            font-size: 10px;
+            color: var(--card-decor, #333);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .cover-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--card-title, #f0ede6);
+            line-height: 1.35;
+        }
+
+        .cover-subtitle {
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--card-subtitle, #888);
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        /* Directory Listing on Cover */
+        .cover-topics {
+            position: relative;
+            z-index: 20;
+            margin-top: 14px;
+        }
+
+        .cover-topic {
+            padding: 7px 0;
+            border-top: 1px solid var(--card-rule, #2a2a2a);
+        }
+
+        .cover-topic:last-child {
+            border-bottom: 1px solid var(--card-rule, #2a2a2a);
+        }
+
+        .cover-topic-num {
+            font-size: 9px;
+            color: var(--card-subtitle, #888);
+            letter-spacing: 0.08em;
+            margin-bottom: 2px;
+        }
+
+        .cover-topic-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--card-title, #f0ede6);
+            line-height: 1.4;
+        }
+
+        .cover-topic-author {
+            font-size: 9px;
+            color: var(--card-subtitle, #888);
+            margin-top: 2px;
+            letter-spacing: 0.03em;
+        }
+
+        /* Person images on cover - Free Canvas Area */
+        .cover-persons {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Let clicks pass through to background if needed, but children have events */
+            z-index: 10;
+        }
+
+        .cover-person {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: grab;
+            pointer-events: auto;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .cover-person:active {
+            cursor: grabbing;
+        }
+
+        .cover-person.selected img {
+            outline: 2px solid #fff;
+            box-shadow: 0 0 0 4px #007bff;
+        }
+
+        .cover-person img {
+            width: 240px;
+            height: auto;
+            border-radius: var(--img-radius, 4px);
+            object-fit: contain;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            pointer-events: none;
+        }
+
+        .cover-person span {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Image Controls Panel in Sidebar */
+        #imageControls {
+            display: none;
+            background: #222;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            margin-top: 10px;
+        }
+
+        #imageControls.visible {
+            display: block;
+            animation: fadeIn 0.2s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .control-row label {
+            margin-bottom: 0;
+            width: 60px;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+            margin: 0 8px;
+        }
+
+        .control-row span {
+            font-size: 10px;
+            color: #888;
+            width: 30px;
+            text-align: right;
+        }
+
+        .btn-delete {
+            width: 100%;
+            background: #3a1515;
+            color: #ff6b6b;
+            border: 1px solid #5a2525;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #4a1a1a;
+        }
+
+        /* Image shape picker */
+        .shape-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .shape-btn {
+            flex: 1;
+            padding: 7px 4px;
+            background: #111;
+            color: #666;
+            border: 1px solid #2a2a2a;
+            border-radius: 2px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shape-btn:hover {
+            border-color: #444;
+            color: #888;
+        }
+
+        .shape-btn.active {
+            background: #f7f5f1;
+            color: #0d0d0d;
+            border-color: #f7f5f1;
+        }
+
+
+
+        .cover-bottom {
+            font-size: 10px;
+            color: var(--card-decor, #333);
+            letter-spacing: 0.04em;
+            opacity: 0.6;
+        }
+
+        /* ===== BODY CARD ===== */
+        .body-card {
+            width: 360px;
+            min-height: 480px;
+            background: #faf8f5;
+            padding: 36px 32px 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            color: #1a1a1a;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            border-radius: 2px;
+        }
+
+        /* Decorative top line */
+        .body-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 32px;
+            right: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.1;
+        }
+
+        /* Decorative bottom line */
+        .body-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 32px;
+            right: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, currentColor, transparent);
+            opacity: 0.1;
+        }
+
+        .body-card .page-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .body-card .page-header span {
+            font-size: 9px;
+            color: #bbb;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+        }
+
+        .body-card .page-content {
+            flex: 1;
+        }
+
+        .body-card .page-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .body-card .page-footer .brand-mark {
+            font-size: 9px;
+            color: #bbb;
+            letter-spacing: 0.06em;
+            font-weight: 500;
+        }
+
+        .body-card .page-footer .date-mark {
+            font-size: 9px;
+            color: #bbb;
+            letter-spacing: 0.06em;
+            font-weight: 500;
+        }
+
+        .body-card .page-footer .page-num {
+            font-size: 9px;
+            color: #bbb;
+            font-weight: 500;
+        }
+
+        /* Body content typography */
+        .body-card h2 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 24px 0 14px;
+            line-height: 1.35;
+            font-feature-settings: 'halt' off, 'palt' off;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        /* Elegant underline for h2 */
+        .body-card h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: currentColor;
+            opacity: 0.2;
+            border-radius: 2px;
+        }
+
+        .body-card h2:first-child {
+            margin-top: 0;
+        }
+
+        .body-card h3 {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 1.15em;
+            font-weight: 700;
+            color: #2a2a2a;
+            margin: 20px 0 12px;
+            line-height: 1.4;
+            font-feature-settings: 'halt' off, 'palt' off;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        /* Decorative dot for h3 */
+        .body-card h3::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            opacity: 0.3;
+            border-radius: 50%;
+        }
+
+        .body-card p {
+            font-size: 1em;
+            line-height: 1.9;
+            color: #333;
+            margin: 8px 0;
+            font-feature-settings: 'halt' off, 'palt' off;
+            word-break: break-all;
+            word-break: auto-phrase;
+            /* Chrome 119+: smarter line breaks for CJK */
+            text-align: justify;
+            text-justify: inter-ideograph;
+        }
+
+        /* CJK punctuation fix */
+        .cjk-punct {
+            display: inline-block;
+            margin-right: -0.05em;
+            margin-left: -0.05em;
+            padding-right: 0.1em;
+            padding-left: 0.1em;
+        }
+
+        /* CJK bracket fix for html2canvas export */
+        .cjk-bracket {
+            display: inline-block;
+            padding: 0 0.05em;
+        }
+
+        .body-card strong {
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .body-card em {
+            font-style: italic;
+        }
+
+        /* Link style */
+        .body-card a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        /* Code inline */
+        .body-card code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            background: rgba(0,0,0,0.05);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: inherit;
+        }
+
+        /* Code block */
+        .body-card pre {
+            background: rgba(0,0,0,0.04);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 12px 0;
+            overflow-x: auto;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .body-card pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.85em;
+            line-height: 1.6;
+        }
+
+        .body-card blockquote {
+            border-left: 4px solid #d4cfc7;
+            padding: 14px 18px;
+            margin: 16px 0;
+            background: linear-gradient(135deg, #f8f5f1 0%, #f3f0eb 100%);
+            border-radius: 0 6px 6px 0;
+            position: relative;
+        }
+
+        /* Quote mark decoration */
+        .body-card blockquote::before {
+            content: '"';
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            font-size: 32px;
+            color: #d4cfc7;
+            opacity: 0.5;
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+
+        .body-card blockquote p {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.8;
+            font-style: italic;
+            margin: 4px 0;
+        }
+
+        .body-card hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0dcd5, transparent);
+            margin: 20px 0;
+            opacity: 0.6;
+        }
+
+        .body-card ul,
+        .body-card ol {
+            padding-left: 24px;
+            margin: 12px 0;
+        }
+
+        .body-card li {
+            font-size: 1em;
+            line-height: 1.8;
+            color: #333;
+            margin: 6px 0;
+        }
+
+        .body-card ul li {
+            list-style-type: disc;
+            list-style-position: outside;
+        }
+
+        .body-card ol li {
+            list-style-type: decimal;
+            list-style-position: outside;
+        }
+
+        /* Custom bullet for ul */
+        .body-card ul li::marker {
+            color: currentColor;
+            opacity: 0.5;
+        }
+
+        /* ===== HIDDEN RENDER AREA ===== */
+        #renderArea {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+        }
+
+        /* ===== MARKDOWN INPUT ===== */
+        #mdInput {
+            min-height: 300px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+        <h1>Insight 参考</h1>
+        <div class="brand">图片生成器 · 扩展思维社</div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="cover" onclick="switchTab('cover')">封面</button>
+            <button class="tab-btn" data-tab="body" onclick="switchTab('body')">正文排版</button>
+        </div>
+
+        <!-- COVER TAB -->
+        <div class="tab-content active" id="tab-cover">
+            <div>
+                <label>期数标识</label>
+                <input type="text" id="issueNum" placeholder="Insight 参考 · 003" oninput="updateCover()">
+            </div>
+            <div>
+                <label>主标题</label>
+                <textarea id="coverTitle" placeholder="赚到第一块钱之前&#10;你不需要任何准备" oninput="updateCover()"></textarea>
+            </div>
+            <div>
+                <label>副标题</label>
+                <textarea id="coverSub" placeholder="一个创业教父 · 一个风险思想家&#10;一个艺术家 · 一个罗马政治家"
+                    oninput="updateCover()"></textarea>
+            </div>
+
+            <!-- Directory Topics -->
+            <div>
+                <label>本期筛选（目录）</label>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" id="topic1" placeholder="标题 1" style="flex:1;" oninput="updateCover()">
+                        <input type="text" id="author1" placeholder="来源" style="width:90px;" oninput="updateCover()">
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" id="topic2" placeholder="标题 2" style="flex:1;" oninput="updateCover()">
+                        <input type="text" id="author2" placeholder="来源" style="width:90px;" oninput="updateCover()">
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" id="topic3" placeholder="标题 3" style="flex:1;" oninput="updateCover()">
+                        <input type="text" id="author3" placeholder="来源" style="width:90px;" oninput="updateCover()">
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                        <input type="text" id="topic4" placeholder="标题 4" style="flex:1;" oninput="updateCover()">
+                        <input type="text" id="author4" placeholder="来源" style="width:90px;" oninput="updateCover()">
+                    </div>
+                </div>
+            </div>
+            <!-- Legacy section removed -->
+            <div>
+                <label>人物图片（最多4张）</label>
+                <div class="upload-zone" id="uploadZone">
+                    点击或拖拽上传人物图片
+                    <div class="hint">支持任意比例，拖拽调整位置</div>
+                    <input type="file" multiple accept="image/*" onchange="handleImageUpload(event)">
+                </div>
+                <div class="image-previews" id="imagePreviews"></div>
+
+                <!-- Image Controls Panel -->
+                <div id="imageControls">
+                    <div class="control-row" style="margin-bottom:12px;color:#fff;font-size:12px;font-weight:bold;">
+                        选中图片设置
+                    </div>
+                    <div class="control-row">
+                        <label>缩放</label>
+                        <input type="range" min="0.3" max="4.0" step="0.1" id="ctrlScale"
+                            oninput="updateImage('scale', this.value)">
+                        <span id="valScale">1.0</span>
+                    </div>
+                    <div class="control-row">
+                        <label>圆角</label>
+                        <input type="range" min="0" max="50" step="1" id="ctrlRadius"
+                            oninput="updateImage('radius', this.value)">
+                        <span id="valRadius">4</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteSelectedImage()">移除选中图片</button>
+                    <div style="font-size:10px;color:#666;margin-top:8px;text-align:center;">
+                        提示：点击图片选中，拖拽移动
+                    </div>
+                </div>
+            </div>
+            <div>
+                <label>配色方案</label>
+                <div class="scheme-buttons" id="coverSchemes"></div>
+            </div>
+            <button class="export-btn" onclick="exportCover()">↓ 导出封面 PNG (1080×1440)</button>
+        </div>
+
+        <!-- BODY TAB -->
+        <div class="tab-content" id="tab-body">
+            <div style="display:flex;gap:8px;">
+                <div style="flex:1">
+                    <label>页眉文字</label>
+                    <input type="text" id="headerBrand" placeholder="Insight 参考" oninput="updateBody()">
+                </div>
+                <div style="width:80px;">
+                    <label>字号</label>
+                    <input type="number" id="headerFontSize" value="9" min="6" max="20" step="1" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-size:14px;" oninput="updateBody()">
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <div style="flex:1">
+                    <label>页脚署名</label>
+                    <input type="text" id="footerBrand" placeholder="扩展思维社" oninput="updateBody()">
+                </div>
+                <div style="width:80px;">
+                    <label>字号</label>
+                    <input type="number" id="footerFontSize" value="9" min="6" max="20" step="1" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-size:14px;" oninput="updateBody()">
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <div style="flex:1">
+                    <label>日期显示</label>
+                    <input type="date" id="dateDisplay" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-size:14px;" oninput="updateBody()">
+                </div>
+                <div style="width:120px;">
+                    <label>日期格式</label>
+                    <select id="dateFormat" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-size:14px;" onchange="updateBody()">
+                        <option value="YYYY-MM-DD">2024-01-15</option>
+                        <option value="YYYY/MM/DD">2024/01/15</option>
+                        <option value="YYYY年MM月DD日">2024年01月15日</option>
+                        <option value="MM-DD">01-15</option>
+                        <option value="MM月DD日">01月15日</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label>粘贴 Markdown 全文</label>
+                <textarea id="mdInput"
+                    placeholder="# 你的文章标题&#10;&#10;**正文内容...**&#10;&#10;---&#10;&#10;粘贴你的 Markdown 文章内容..."
+                    oninput="updateBody()"></textarea>
+            </div>
+            <div>
+                <div class="control-row">
+                    <label>字号</label>
+                    <input type="range" min="10" max="18" step="0.5" value="14" id="bodyFontSize"
+                        oninput="bodyFontSize=parseFloat(this.value);document.getElementById('valBodyFs').textContent=this.value+'px';updateBody()">
+                    <span id="valBodyFs">14px</span>
+                </div>
+            </div>
+            <div>
+                <div class="control-row">
+                    <label>行间距</label>
+                    <input type="range" min="1.2" max="2.5" step="0.1" value="1.9" id="bodyLineHeight"
+                        oninput="document.getElementById('valBodyLh').textContent=this.value;updateBody()">
+                    <span id="valBodyLh">1.9</span>
+                </div>
+            </div>
+            <div>
+                <div class="control-row">
+                    <label>段落间距</label>
+                    <input type="range" min="4" max="24" step="2" value="8" id="paragraphSpacing"
+                        oninput="document.getElementById('valParaSpace').textContent=this.value+'px';updateBody()">
+                    <span id="valParaSpace">8px</span>
+                </div>
+            </div>
+            <div>
+                <label>字体选择</label>
+                <select id="fontFamily" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-family:inherit;font-size:14px;" onchange="updateBody()">
+                    <option value="'Noto Sans SC', sans-serif">Noto Sans SC (默认)</option>
+                    <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                    <option value="'SimSun', serif">宋体</option>
+                    <option value="'SimHei', sans-serif">黑体</option>
+                    <option value="'KaiTi', serif">楷体</option>
+                    <option value="'FangSong', serif">仿宋</option>
+                    <option value="sans-serif">系统默认无衬线</option>
+                    <option value="serif">系统默认衬线</option>
+                </select>
+                <div id="customFontSection" style="margin-top:8px;display:none;">
+                    <label style="font-size:10px;color:#666;">自定义字体</label>
+                    <select id="customFontSelect" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;margin-top:4px;" onchange="selectCustomFont()">
+                        <option value="">选择本地字体...</option>
+                    </select>
+                    <input type="text" id="customFontInput" placeholder="或手动输入字体名称" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;margin-top:4px;" onchange="applyCustomFont()">
+                </div>
+                <button onclick="detectLocalFonts()" style="width:100%;background:#333;color:#aaa;border:1px solid #444;padding:8px;border-radius:4px;cursor:pointer;font-size:12px;margin-top:8px;">检测本地字体</button>
+            </div>
+            <div>
+                <label>自定义背景色</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="color" id="customBgColor" value="#faf8f5" style="width:50px;height:32px;border:1px solid #333;background:#2a2a2a;cursor:pointer;" onchange="updateCustomColor()">
+                    <input type="text" id="customBgColorText" value="#faf8f5" placeholder="#faf8f5" style="flex:1;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;" oninput="syncColorInput('bg')">
+                    <button onclick="resetBgColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
+                </div>
+            </div>
+            <div>
+                <label>自定义文字色</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <input type="color" id="customTextColor" value="#1a1a1a" style="width:50px;height:32px;border:1px solid #333;background:#2a2a2a;cursor:pointer;" onchange="updateCustomColor()">
+                    <input type="text" id="customTextColorText" value="#1a1a1a" placeholder="#1a1a1a" style="flex:1;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;" oninput="syncColorInput('text')">
+                    <button onclick="resetTextColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
+                </div>
+            </div>
+            <div>
+                <label>配色方案</label>
+                <div class="scheme-buttons" id="bodySchemes"></div>
+            </div>
+            <button class="export-btn" onclick="exportAllPages()">↓ 导出全部页面 PNG</button>
+            <div style="font-size:11px;color:#555;text-align:center;" id="exportStatus"></div>
+        </div>
+    </aside>
+
+    <!-- RIGHT PREVIEW -->
+    <main class="preview-area" id="previewArea"></main>
+
+    <!-- HIDDEN RENDER AREA for hi-res export -->
+    <div id="renderArea"></div>
+
+    <!-- DEPENDENCIES -->
+    <script src="lib/html2canvas.min.js"></script>
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/jszip.min.js"></script>
+    <script>
+        // ===== COLOR SCHEMES =====
+        const SCHEMES = {
+            blackPure: { name: '纯黑', bg: '#0d0d0d', title: '#f0ede6', subtitle: '#888', rule: '#2a2a2a', decor: '#333' },
+            blueDark: { name: '深蓝', bg: '#1a1a2e', title: '#eaeaea', subtitle: '#a8b2d1', rule: '#16213e', decor: '#3d405b' },
+            coffeePaper: { name: '咖啡', bg: '#2d2424', title: '#f8f5f1', subtitle: '#c4a77d', rule: '#3d3030', decor: '#70564f' },
+            greenMist: { name: '松绿', bg: '#1e3a3a', title: '#f4f9f4', subtitle: '#a7bfb8', rule: '#2c5f5f', decor: '#4a7c7c' },
+            purpleTwilight: { name: '暮紫', bg: '#2b2b3f', title: '#ece8df', subtitle: '#b8a9c9', rule: '#3e3e54', decor: '#5e5e7a' },
+            paperLight: { name: '米纸', bg: '#f9f7f3', title: '#1a1a1a', subtitle: '#5f5f5f', rule: '#d8d4cc', decor: '#a8a49a' },
+            blackGold: { name: '黑金', bg: '#0d0d0d', title: '#f0e6cc', subtitle: '#d4af37', rule: '#2a2518', decor: '#8b7d3c' },
+            terracotta: { name: '赤陶', bg: '#2a1810', title: '#f5e6d3', subtitle: '#c4622d', rule: '#3d2518', decor: '#8b4f30' },
+            darkForest: { name: '墨绿金', bg: '#0f1f18', title: '#e8dcc8', subtitle: '#8faa6b', rule: '#1e3a28', decor: '#4d6b3a' },
+            smokeGray: { name: '烟灰', bg: '#f0eeeb', title: '#2c2c2c', subtitle: '#8a8580', rule: '#d4d0ca', decor: '#b0aba4' },
+        };
+
+        const BODY_SCHEMES = {
+            warmPaper: { name: '暖纸', bg: '#faf8f5', text: '#1a1a1a', sub: '#555', border: '#e0dcd5', quote: '#f3f0eb', headerAccent: '#bbb' },
+            coolWhite: { name: '冷白', bg: '#f5f7fa', text: '#1a1a1a', sub: '#555', border: '#dde1e8', quote: '#edf0f5', headerAccent: '#b0b8c4' },
+            darkMode: { name: '暗色', bg: '#1a1a1a', text: '#e8e4de', sub: '#aaa', border: '#333', quote: '#252525', headerAccent: '#555' },
+            creamBook: { name: '书页', bg: '#f6f1e7', text: '#2c2416', sub: '#6b5b4a', border: '#ddd0ba', quote: '#efe8d8', headerAccent: '#c4b89e' },
+            inkGold: { name: '墨金', bg: '#0d0d0d', text: '#f0e6cc', sub: '#d4af37', border: '#2a2518', quote: '#161310', headerAccent: '#8b7d3c' },
+            terracotta: { name: '赤陶', bg: '#2a1810', text: '#f5e6d3', sub: '#c4622d', border: '#3d2518', quote: '#1f120b', headerAccent: '#8b4f30' },
+            ashTone: { name: '灰调', bg: '#f0eeeb', text: '#2c2c2c', sub: '#8a8580', border: '#d4d0ca', quote: '#e6e3df', headerAccent: '#b0aba4' },
+        };
+
+        let currentCoverScheme = 'blackPure';
+        let currentBodyScheme = 'warmPaper';
+        let bodyFontSize = 14;
+        let bodyLineHeight = 1.9;
+        let paragraphSpacing = 8;
+        let personImages = []; // { id, src, name, x, y, scale, radius, width, height }
+        let selectedImageId = null;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        let draggedImageId = null;
+        let dragStartPos = null;
+        let dragActuallyMoved = false;
+        let lastSelectTime = 0;
+        let customBgColor = null;
+        let customTextColor = null;
+
+        // ===== INIT =====
+        window.addEventListener('DOMContentLoaded', () => {
+            initSchemeButtons();
+            updateCover();
+
+            // Initialize date picker to today
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('dateDisplay').value = dateStr;
+
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+            });
+        });
+
+        function initSchemeButtons() {
+            const coverContainer = document.getElementById('coverSchemes');
+            Object.entries(SCHEMES).forEach(([key, s]) => {
+                const btn = document.createElement('button');
+                btn.className = 'scheme-btn' + (key === currentCoverScheme ? ' active' : '');
+                btn.textContent = s.name;
+                btn.onclick = () => {
+                    currentCoverScheme = key;
+                    coverContainer.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateCover();
+                };
+                coverContainer.appendChild(btn);
+            });
+
+            const bodyContainer = document.getElementById('bodySchemes');
+            Object.entries(BODY_SCHEMES).forEach(([key, s]) => {
+                const btn = document.createElement('button');
+                btn.className = 'scheme-btn' + (key === currentBodyScheme ? ' active' : '');
+                btn.textContent = s.name;
+                btn.onclick = () => {
+                    currentBodyScheme = key;
+                    bodyContainer.querySelectorAll('.scheme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Reset custom colors when switching schemes
+                    customBgColor = null;
+                    customTextColor = null;
+
+                    // Update color inputs to match new scheme
+                    document.getElementById('customBgColor').value = s.bg;
+                    document.getElementById('customBgColorText').value = s.bg;
+                    document.getElementById('customTextColor').value = s.text;
+                    document.getElementById('customTextColorText').value = s.text;
+
+                    updateBody();
+                };
+                bodyContainer.appendChild(btn);
+            });
+        }
+
+        // ===== TAB SWITCH =====
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'cover') updateCover();
+            else updateBody();
+        }
+
+        // ===== COVER =====
+        function updateCover() {
+            const s = SCHEMES[currentCoverScheme];
+            const issue = document.getElementById('issueNum').value || '';
+            const title = document.getElementById('coverTitle').value || '输入主标题';
+            const sub = document.getElementById('coverSub').value || '';
+
+            // Build topics directory
+            let topicsHTML = '';
+            const topics = [];
+            for (let i = 1; i <= 4; i++) {
+                const t = (document.getElementById('topic' + i)?.value || '').trim();
+                const a = (document.getElementById('author' + i)?.value || '').trim();
+                if (t) topics.push({ num: String(i).padStart(2, '0'), title: t, author: a });
+            }
+            if (topics.length > 0) {
+                topicsHTML = `<div class="cover-topics">
+                    ${topics.map(t => `
+                        <div class="cover-topic">
+                            <div class="cover-topic-num">${t.num}</div>
+                            <div class="cover-topic-title">${esc(t.title)}</div>
+                            ${t.author ? `<div class="cover-topic-author">—— ${esc(t.author)}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>`;
+            }
+
+            let personsHTML = '';
+            if (personImages.length > 0) {
+                personsHTML = personImages.map(p => {
+                    const isSelected = p.id === selectedImageId ? 'selected' : '';
+                    const style = `left:${p.x}px; top:${p.y}px; transform: scale(${p.scale}); z-index:${isSelected ? 20 : 10};`;
+                    const imgStyle = `border-radius:${p.radius}%;`;
+
+                    return `
+                    <div class="cover-person ${isSelected}" style="${style}" 
+                         onmousedown="startDrag(event, ${p.id})">
+                        <img src="${p.src}" style="${imgStyle}" crossorigin="anonymous">
+                        <span>${esc(p.name)}</span>
+                    </div>`;
+                }).join('');
+                personsHTML = `<div class="cover-persons">${personsHTML}</div>`;
+            }
+
+            const preview = document.getElementById('previewArea');
+            preview.innerHTML = `
+            <div class="cover-card" id="coverPreview"
+                 style="--card-bg:${s.bg};--card-title:${s.title};--card-subtitle:${s.subtitle};--card-rule:${s.rule};--card-decor:${s.decor}">
+                <div class="cover-top">
+                    <div class="cover-rule"></div>
+                    ${issue ? `<div class="cover-issue">${esc(issue)}</div>` : ''}
+                    <div class="cover-title">${esc(title).replace(/\n/g, '<br>')}</div>
+                    ${sub ? `<div class="cover-subtitle">${esc(sub).replace(/\n/g, '<br>')}</div>` : ''}
+                    ${topicsHTML}
+                </div>
+                
+                <!-- Free Canvas Layer -->
+                ${personsHTML}
+
+                <div class="cover-bottom">向右滑动 →</div>
+            </div>`;
+        }
+
+        // ===== IMAGE LOGIC =====
+        function handleImageUpload(e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Default position: center
+                        const id = Date.now() + Math.random();
+                        const name = file.name.replace(/\.[^.]+$/, '').slice(0, 10);
+                        personImages.push({
+                            id: id,
+                            src: ev.target.result,
+                            name: name,
+                            x: 60, // Centered on 360px card (360/2 - 240/2)
+                            y: 120, // Vertically centered on 480px card
+                            scale: 1,
+                            radius: 4, // Default slight round
+                            width: img.naturalWidth,
+                            height: img.naturalHeight
+                        });
+                        // Auto-select the new image
+                        selectImage(null, id);
+                        renderImagePreviews();
+                        updateCover();
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            e.target.value = '';
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('imagePreviews');
+            container.innerHTML = personImages.map((p, i) => `
+            <div class="img-thumb-wrap">
+                <img class="img-thumb" src="${p.src}" onclick="selectImage(event, ${p.id})" 
+                     style="border-color:${p.id === selectedImageId ? '#007bff' : '#333'}">
+                <button class="remove-btn" onclick="removeImage(${p.id})">×</button>
+                <input class="img-name-input" value="${esc(p.name)}" placeholder="姓名"
+                       onchange="updateName(${p.id}, this.value)">
+            </div>
+        `).join('');
+        }
+
+        function removeImage(id) {
+            personImages = personImages.filter(p => p.id !== id);
+            if (selectedImageId === id) {
+                selectedImageId = null;
+                document.getElementById('imageControls').classList.remove('visible');
+            }
+            renderImagePreviews();
+            updateCover();
+        }
+
+        function updateName(id, name) {
+            const img = personImages.find(p => p.id === id);
+            if (img) {
+                img.name = name;
+                updateCover();
+            }
+        }
+
+        // Selection & Controls
+        function selectImage(e, id) {
+            if (e) e.stopPropagation();
+            selectedImageId = id;
+            updateCover();
+            renderImagePreviews(); // Update borders
+
+            const panel = document.getElementById('imageControls');
+            const img = personImages.find(p => p.id === id);
+
+            if (img) {
+                panel.classList.add('visible');
+                document.getElementById('ctrlScale').value = img.scale;
+                document.getElementById('valScale').textContent = img.scale;
+                document.getElementById('ctrlRadius').value = img.radius;
+                document.getElementById('valRadius').textContent = img.radius;
+            } else {
+                panel.classList.remove('visible');
+            }
+        }
+
+        // Global click to deselect (ONLY when cover tab is active)
+        document.addEventListener('click', (e) => {
+            // Only relevant when cover tab is shown
+            if (!document.getElementById('tab-cover').classList.contains('active')) return;
+            // Skip if we just selected an image (DOM was rebuilt, event target is stale)
+            if (Date.now() - lastSelectTime < 300) return;
+
+            if (!e.target.closest('.cover-person') &&
+                !e.target.closest('#imageControls') &&
+                !e.target.closest('.img-thumb-wrap') &&
+                !e.target.closest('#uploadZone')) {
+                selectedImageId = null;
+                updateCover();
+                renderImagePreviews();
+                document.getElementById('imageControls').classList.remove('visible');
+            }
+        });
+
+        function updateImage(prop, value) {
+            const img = personImages.find(p => p.id === selectedImageId);
+            if (!img) return;
+
+            if (prop === 'scale') {
+                img.scale = parseFloat(value);
+                document.getElementById('valScale').textContent = img.scale;
+            } else if (prop === 'radius') {
+                img.radius = parseInt(value);
+                document.getElementById('valRadius').textContent = img.radius;
+            }
+            updateCover();
+        }
+
+        function deleteSelectedImage() {
+            if (selectedImageId) removeImage(selectedImageId);
+        }
+
+        // Drag Logic
+        function startDrag(e, id) {
+            if (e.button !== 0) return; // Left click only
+            e.preventDefault();
+            e.stopPropagation();
+
+            // CRITICAL: Capture element rect BEFORE selectImage rebuilds DOM
+            const el = e.currentTarget;
+            const rect = el.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+
+            // Record start position for movement threshold
+            dragStartPos = { x: e.clientX, y: e.clientY };
+            dragActuallyMoved = false;
+
+            draggedImageId = id;
+            isDragging = true;
+
+            // Select the image (this rebuilds DOM, but we already captured rect)
+            lastSelectTime = Date.now();
+            selectImage(e, id);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !draggedImageId) return;
+
+            // 3px threshold: don't reposition until mouse actually moved
+            if (!dragActuallyMoved) {
+                const dx = e.clientX - dragStartPos.x;
+                const dy = e.clientY - dragStartPos.y;
+                if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+                dragActuallyMoved = true;
+            }
+
+            e.preventDefault();
+
+            const img = personImages.find(p => p.id === draggedImageId);
+            if (!img) return;
+
+            const card = document.getElementById('coverPreview');
+            if (!card) return;
+            const cardRect = card.getBoundingClientRect();
+
+            let newX = e.clientX - cardRect.left - dragOffset.x;
+            let newY = e.clientY - cardRect.top - dragOffset.y;
+
+            img.x = Math.round(newX);
+            img.y = Math.round(newY);
+
+            updateCover();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            draggedImageId = null;
+            dragStartPos = null;
+            dragActuallyMoved = false;
+        });
+
+        // Drag & drop upload logic
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = '#888'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = '#444'; });
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '#444';
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            // Use same logic as handleImageUpload
+            // We need a synthetic event object or just call the logic
+            handleDragUpload(files);
+        });
+
+        function handleDragUpload(files) {
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const id = Date.now() + Math.random();
+                        const name = file.name.replace(/\.[^.]+$/, '').slice(0, 10);
+                        personImages.push({
+                            id: id,
+                            src: ev.target.result,
+                            name: name,
+                            x: 60,
+                            y: 120,
+                            scale: 1,
+                            radius: 4,
+                            width: img.naturalWidth,
+                            height: img.naturalHeight
+                        });
+                        selectImage(null, id);
+                        renderImagePreviews();
+                        updateCover();
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ===== BODY PAGINATION =====
+        function updateBody() {
+            const md = document.getElementById('mdInput').value;
+            if (!md.trim()) {
+                document.getElementById('previewArea').innerHTML = '<div style="color:#555;font-size:14px;">粘贴 Markdown 内容以预览排版</div>';
+                return;
+            }
+
+            let html = marked.parse(md);
+            html = fixCJKBrackets(html);
+            const pages = paginateContent(html);
+            const bs = BODY_SCHEMES[currentBodyScheme];
+            const headerText = document.getElementById('headerBrand').value.trim() || 'Insight 参考';
+            const footerText = document.getElementById('footerBrand').value.trim() || '扩展思维社';
+            const fontFamily = document.getElementById('fontFamily').value;
+            const headerFontSize = document.getElementById('headerFontSize').value || 9;
+            const footerFontSize = document.getElementById('footerFontSize').value || 9;
+
+            // Get line height and paragraph spacing
+            bodyLineHeight = parseFloat(document.getElementById('bodyLineHeight').value);
+            paragraphSpacing = parseInt(document.getElementById('paragraphSpacing').value);
+
+            // Format date
+            const dateInput = document.getElementById('dateDisplay').value;
+            const dateFormat = document.getElementById('dateFormat').value;
+            let displayDate = '';
+            if (dateInput) {
+                const date = new Date(dateInput);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                switch(dateFormat) {
+                    case 'YYYY-MM-DD': displayDate = `${year}-${month}-${day}`; break;
+                    case 'YYYY/MM/DD': displayDate = `${year}/${month}/${day}`; break;
+                    case 'YYYY年MM月DD日': displayDate = `${year}年${month}月${day}日`; break;
+                    case 'MM-DD': displayDate = `${month}-${day}`; break;
+                    case 'MM月DD日': displayDate = `${month}月${day}日`; break;
+                }
+            }
+
+            // Use custom colors if set, otherwise use scheme colors
+            const bg = customBgColor || bs.bg;
+            const text = customTextColor || bs.text;
+
+            const preview = document.getElementById('previewArea');
+            preview.innerHTML = pages.map((content, i) => `
+            <div class="body-card" style="background:${bg};color:${text};font-size:${bodyFontSize}px;font-family:${fontFamily};"
+                 data-page="${i}">
+                <div class="page-header"><span style="color:${bs.headerAccent};font-size:${headerFontSize}px;">${headerText}</span></div>
+                <div class="page-content">${content}</div>
+                <div class="page-footer" style="border-color:${bs.border}">
+                    <span class="brand-mark" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${footerText}</span>
+                    ${displayDate ? `<span class="date-mark" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${displayDate}</span>` : `<span class="page-num" style="color:${bs.headerAccent};font-size:${footerFontSize}px;">${String(i + 1).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}</span>`}
+                </div>
+            </div>
+        `).join('');
+
+            // Apply scheme colors and typography to inner elements
+            preview.querySelectorAll('.body-card').forEach(card => {
+                card.querySelectorAll('blockquote').forEach(bq => { bq.style.background = bs.quote; bq.style.borderColor = bs.border; });
+                card.querySelectorAll('blockquote p').forEach(p => { p.style.color = bs.sub; });
+                card.querySelectorAll('hr').forEach(hr => { hr.style.background = bs.border; });
+                card.querySelectorAll('p').forEach(p => {
+                    if (!p.closest('blockquote')) {
+                        p.style.color = text;
+                        p.style.lineHeight = bodyLineHeight;
+                        p.style.marginTop = paragraphSpacing + 'px';
+                        p.style.marginBottom = paragraphSpacing + 'px';
+                    }
+                });
+                card.querySelectorAll('li').forEach(li => {
+                    li.style.color = text;
+                    li.style.lineHeight = bodyLineHeight;
+                    li.style.marginTop = '4px';
+                    li.style.marginBottom = '4px';
+                });
+                card.querySelectorAll('h2, h3').forEach(h => { h.style.color = text; });
+                card.querySelectorAll('strong').forEach(s => { s.style.color = text; });
+            });
+        }
+
+        // Wrap CJK corner brackets in spans with padding so html2canvas renders them correctly
+        function fixCJKBrackets(html) {
+            return html
+                .replace(/\u300c/g, '<span class="cjk-bracket">\u300c</span>')
+                .replace(/\u300d/g, '<span class="cjk-bracket">\u300d</span>')
+                .replace(/\u300e/g, '<span class="cjk-bracket">\u300e</span>')
+                .replace(/\u300f/g, '<span class="cjk-bracket">\u300f</span>')
+                .replace(/([:：])/g, '<span class="cjk-punct">$1</span>');
+        }
+
+        function paginateContent(html) {
+            // Create temporary container to measure with real CSS
+            // CRITICAL: override min-height and flex from .body-card so scrollHeight is accurate
+            const temp = document.createElement('div');
+            temp.className = 'body-card';
+            temp.style.cssText = `position:absolute;left:-9999px;top:0;width:360px;padding:36px 32px 28px;min-height:0!important;height:auto!important;display:block!important;font-size:${bodyFontSize}px;`;
+            const contentArea = document.createElement('div');
+            contentArea.className = 'page-content';
+            contentArea.style.cssText = 'min-height:0!important;height:auto!important;flex:none!important;';
+            temp.appendChild(contentArea);
+            document.body.appendChild(temp);
+
+            // Parse HTML into block elements
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html;
+            const blocks = Array.from(wrapper.children);
+
+            const MAX_HEIGHT = 380; // usable content height per page
+            const pages = [];
+            let pageStartIdx = 0;
+
+            // Accumulative measurement: add blocks one by one, check total height
+            for (let i = 0; i < blocks.length; i++) {
+                // Clear and re-add all blocks from pageStartIdx to i
+                contentArea.innerHTML = '';
+                for (let j = pageStartIdx; j <= i; j++) {
+                    contentArea.appendChild(blocks[j].cloneNode(true));
+                }
+                const totalHeight = contentArea.scrollHeight;
+
+                if (totalHeight > MAX_HEIGHT && i > pageStartIdx) {
+                    // Current block overflows — save page WITHOUT this block
+                    contentArea.innerHTML = '';
+                    for (let j = pageStartIdx; j < i; j++) {
+                        contentArea.appendChild(blocks[j].cloneNode(true));
+                    }
+                    pages.push(contentArea.innerHTML);
+                    pageStartIdx = i;
+                }
+            }
+
+            // Remaining blocks
+            contentArea.innerHTML = '';
+            for (let j = pageStartIdx; j < blocks.length; j++) {
+                contentArea.appendChild(blocks[j].cloneNode(true));
+            }
+            if (contentArea.innerHTML.trim()) {
+                pages.push(contentArea.innerHTML);
+            }
+
+            document.body.removeChild(temp);
+            return pages.length > 0 ? pages : ['<p style="color:#aaa">内容为空</p>'];
+        }
+
+        // ===== EXPORT =====
+        async function exportCover() {
+            const el = document.getElementById('coverPreview');
+            if (!el) return;
+            await exportElement(el, 'insight-cover');
+        }
+
+        async function exportAllPages() {
+            const cards = document.querySelectorAll('.body-card');
+            if (cards.length === 0) return;
+
+            const statusEl = document.getElementById('exportStatus');
+
+            if (cards.length === 1) {
+                await exportElement(cards[0], 'insight-page-01');
+                return;
+            }
+
+            statusEl.textContent = '正在生成...';
+            const zip = new JSZip();
+
+            for (let i = 0; i < cards.length; i++) {
+                statusEl.textContent = `正在生成 ${i + 1} / ${cards.length}...`;
+                const canvas = await html2canvas(cards[i], {
+                    scale: 3,
+                    backgroundColor: null,
+                    logging: false,
+                    width: 360,
+                    useCORS: true,
+                });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                zip.file(`insight-page-${String(i + 1).padStart(2, '0')}.png`, blob);
+            }
+
+            statusEl.textContent = '正在打包下载...';
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            saveBlob(zipBlob, `insight-pages-${Date.now()}.zip`);
+            statusEl.textContent = `✓ 已导出 ${cards.length} 页`;
+            setTimeout(() => { statusEl.textContent = ''; }, 3000);
+        }
+
+        async function exportElement(el, filename) {
+            try {
+                const canvas = await html2canvas(el, {
+                    scale: 3,
+                    backgroundColor: null,
+                    logging: false,
+                    width: 360,
+                    useCORS: true,
+                });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                saveBlob(blob, `${filename}-${Date.now()}.png`);
+            } catch (err) {
+                console.error('Export failed:', err);
+                alert('导出失败，请查看控制台');
+            }
+        }
+
+        // Robust download helper
+        function saveBlob(blob, filename) {
+            // IE/Edge legacy
+            if (navigator.msSaveBlob) { navigator.msSaveBlob(blob, filename); return; }
+
+            // Detect Safari or file:// protocol where <a download> is broken
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isFileProto = location.protocol === 'file:';
+
+            if ((isSafari || isFileProto) && blob.type.startsWith('image/')) {
+                // For images: open in new tab, user can right-click > Save
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const w = window.open('');
+                    if (w) {
+                        w.document.write(`<html><head><title>${filename}</title></head>
+                        <body style="margin:0;display:flex;justify-content:center;align-items:center;
+                        min-height:100vh;background:#111;">
+                        <img src="${reader.result}" style="max-width:100%;max-height:100vh;">
+                        <p style="position:fixed;top:8px;left:50%;transform:translateX(-50%);
+                        color:#fff;font:13px system-ui;background:rgba(0,0,0,0.7);padding:6px 16px;
+                        border-radius:8px;">右键图片 → 存储图像 即可保存</p>
+                        </body></html>`);
+                        w.document.close();
+                    }
+                };
+                reader.readAsDataURL(blob);
+                return;
+            }
+
+            // Standard approach (Chrome / Firefox / http:// protocol)
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 1000);
+        }
+
+        // ===== UTIL =====
+        function esc(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        // ===== CUSTOM COLOR FUNCTIONS =====
+        function updateCustomColor() {
+            const bgColorInput = document.getElementById('customBgColor');
+            const textColorInput = document.getElementById('customTextColor');
+            const bgColorText = document.getElementById('customBgColorText');
+            const textColorText = document.getElementById('customTextColorText');
+
+            // Update text inputs to match color picker
+            bgColorText.value = bgColorInput.value;
+            textColorText.value = textColorInput.value;
+
+            // Set custom colors
+            customBgColor = bgColorInput.value;
+            customTextColor = textColorInput.value;
+
+            updateBody();
+        }
+
+        function syncColorInput(type) {
+            if (type === 'bg') {
+                const textInput = document.getElementById('customBgColorText');
+                const colorInput = document.getElementById('customBgColor');
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    colorInput.value = textInput.value;
+                    customBgColor = textInput.value;
+                    updateBody();
+                }
+            } else if (type === 'text') {
+                const textInput = document.getElementById('customTextColorText');
+                const colorInput = document.getElementById('customTextColor');
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    colorInput.value = textInput.value;
+                    customTextColor = textInput.value;
+                    updateBody();
+                }
+            }
+        }
+
+        function resetBgColor() {
+            const bs = BODY_SCHEMES[currentBodyScheme];
+            document.getElementById('customBgColor').value = bs.bg;
+            document.getElementById('customBgColorText').value = bs.bg;
+            customBgColor = null;
+            updateBody();
+        }
+
+        function resetTextColor() {
+            const bs = BODY_SCHEMES[currentBodyScheme];
+            document.getElementById('customTextColor').value = bs.text;
+            document.getElementById('customTextColorText').value = bs.text;
+            customTextColor = null;
+            updateBody();
+        }
+
+        // Update custom color inputs when scheme changes
+        const originalSchemeClick = Object.getOwnPropertyDescriptor(HTMLButtonElement.prototype, 'onclick');
+
+        // ===== LOCAL FONT DETECTION =====
+        let detectedFonts = [];
+
+        function detectLocalFonts() {
+            const btn = event.target;
+            btn.textContent = '检测中...';
+            btn.disabled = true;
+
+            // Common Chinese and English fonts to detect (expanded list)
+            const commonFonts = [
+                // Windows Chinese fonts (Windows 7/8/10/11)
+                'Microsoft YaHei', 'Microsoft YaHei UI', '微软雅黑', 'SimSun', '宋体', 'SimHei', '黑体',
+                'KaiTi', '楷体', 'KaiTi_GB2312', 'FangSong', '仿宋_GB2312', 'FangSong_GB2312',
+                'LiSu', '隶书', 'YouYuan', '幼圆', 'STSong', 'STKaiti', 'STFangsong', 'STHeiti',
+                'STXihei', 'STLiti', 'STXingkai', 'STXinwei', 'STCaiyun', 'STHupo',
+                'Microsoft JhengHei', 'PMingLiU', 'MingLiU', 'DFKai-SB', 'DFMing-Bd',
+
+                // Mac Chinese fonts
+                'PingFang SC', 'PingFang TC', 'PingFang HK', 'Hiragino Sans GB', 'STHeiti', 'STSong',
+                'STKaiti', 'Heiti SC', 'Heiti TC', 'Songti SC', 'Songti TC', 'Kaiti SC', 'Kaiti TC',
+                'Yuanti SC', 'Yuppy SC',
+
+                // Popular Chinese fonts (Source Han, Noto, etc.)
+                'Source Han Sans SC', 'Source Han Sans CN', 'Source Han Serif SC', 'Source Han Serif CN',
+                '思源黑体', '思源宋体', 'Noto Sans SC', 'Noto Serif SC', 'Noto Sans CJK SC',
+                'Noto Serif CJK SC', 'Zcool QingKe HuangYou', 'Zcool KuaiLe', 'Zcool XiaoWei',
+
+                // Design Chinese fonts
+                'Ma Shan Zheng', 'Long Cang', 'Zhi Mang Xing', 'Liu Jian Mao Cao',
+                'Wang Ma Zhi Su', 'Shu Ti', 'Shi Jie Ti', 'Xingkai SC', 'Xingkai SC GB',
+
+                // Traditional Chinese
+                'MingLiU', 'PMingLiU', 'Microsoft JhengHei', 'DFKai-SB', 'DFMing-Bd',
+
+                // Windows English fonts
+                'Arial', 'Arial Black', 'Arial Narrow', 'Arial Unicode MS',
+                'Times New Roman', 'Georgia', 'Verdana', 'Trebuchet MS', 'Segoe UI',
+                'Segoe UI Light', 'Segoe UI Semibold', 'Calibri', 'Cambria', 'Constantia',
+                'Impact', 'Comic Sans MS', 'Tahoma', 'Courier New', 'Consolas', 'Lucida Console',
+                'Palatino Linotype', 'Book Antiqua', 'Garamond', 'Century', 'Franklin Gothic',
+                'Century Gothic', 'Bookman Old Style', 'Candara', 'Corbel', 'Meiryo',
+
+                // Mac English fonts
+                'Helvetica', 'Helvetica Neue', 'Palatino', 'Menlo', 'Monaco', 'Optima',
+                'Apple Color Emoji', 'Apple Symbols', 'Geneva', 'Monaco', 'New York',
+                'Charcoal', 'Chicago', 'Copperplate', 'Hoefler Text', 'Didot',
+
+                // Google Fonts / Common web fonts
+                'Roboto', 'Open Sans', 'Lato', 'Source Sans Pro', 'Noto Sans', 'Droid Sans',
+                'Noto Serif', 'Merriweather', 'Lora', 'Source Serif Pro', 'Playfair Display',
+                'Montserrat', 'Oswald', 'Raleway', 'PT Sans', 'PT Serif', 'Ubuntu',
+                'Fira Sans', 'Fira Serif',
+
+                // Design fonts
+                'Gill Sans', 'Futura', 'Avant Garde', 'Baskerville', 'Didot',
+                'Garamond', 'Bodoni', 'Caslon', 'Bembo', 'Optima', 'Sabon',
+
+                // Monospace fonts
+                'Fira Code', 'JetBrains Mono', 'Source Code Pro', 'Monaco', 'Consolas',
+                'Inconsolata', 'Menlo', 'Ubuntu Mono', 'PT Mono', 'Anonymous Pro',
+
+                // Handwriting / Display
+                'Brush Script MT', 'Lucida Handwriting', 'Comic Sans MS', 'Bradley Hand',
+
+                // Gaming/Pop culture fonts
+                'Matisse EB', 'Snap ITC', 'Jokerman', 'Freestyle Script', 'Vivaldi',
+
+                // Other popular fonts
+                'Century Schoolbook', 'Cooper Black', 'Rockwell', 'Franklin Gothic Medium',
+                'Bernard MT Condensed', 'Britannic Bold', 'Wide Latin', 'Algerian',
+                'Bauhaus 93', 'Harlow Solid Italic', 'Papyrus', 'Tempus Sans ITC'
+            ];
+
+            detectedFonts = [];
+
+            // Test string with Chinese characters for better Chinese font detection
+            const testString = '测试字体Test123';
+            const baseFonts = ['monospace', 'sans-serif', 'serif'];
+
+            // Create a hidden span element for testing
+            const testSpan = document.createElement('span');
+            testSpan.style.position = 'absolute';
+            testSpan.style.visibility = 'hidden';
+            testSpan.style.whiteSpace = 'nowrap';
+            testSpan.style.fontSize = '100px';
+            testSpan.textContent = testString;
+            document.body.appendChild(testSpan);
+
+            // Get baseline width with each base font
+            const baselineWidths = {};
+            baseFonts.forEach(baseFont => {
+                testSpan.style.fontFamily = baseFont;
+                baselineWidths[baseFont] = testSpan.offsetWidth;
+            });
+
+            // Test each font
+            commonFonts.forEach(fontName => {
+                let isAvailable = false;
+
+                // Test against each base font
+                for (const baseFont of baseFonts) {
+                    const baselineWidth = baselineWidths[baseFont];
+
+                    testSpan.style.fontFamily = `"${fontName}", ${baseFont}`;
+                    const testWidth = testSpan.offsetWidth;
+
+                    // If width differs, font is available
+                    if (baselineWidth !== testWidth) {
+                        isAvailable = true;
+                        break;
+                    }
+                }
+
+                if (isAvailable) {
+                    detectedFonts.push(fontName);
+                }
+            });
+
+            // Cleanup
+            document.body.removeChild(testSpan);
+
+            // Remove duplicates
+            detectedFonts = [...new Set(detectedFonts)];
+
+            // Sort and group fonts
+            detectedFonts.sort((a, b) => {
+                // Chinese fonts first
+                const aHasChinese = /[\u4e00-\u9fa5]/.test(a);
+                const bHasChinese = /[\u4e00-\u9fa5]/.test(b);
+
+                if (aHasChinese && !bHasChinese) return -1;
+                if (!aHasChinese && bHasChinese) return 1;
+
+                // Within same category, sort alphabetically (Chinese by pinyin-like order)
+                return a.localeCompare(b, 'zh-Hans-CN');
+            });
+
+            // Update the custom font select
+            const customFontSelect = document.getElementById('customFontSelect');
+            customFontSelect.innerHTML = '<option value="">选择本地字体...</option>';
+
+            // Group by type
+            const chineseFonts = detectedFonts.filter(f => /[\u4e00-\u9fa5]/.test(f));
+            const englishFonts = detectedFonts.filter(f => !/[\u4e00-\u9fa5]/.test(f));
+
+            if (chineseFonts.length > 0) {
+                const chineseGroup = document.createElement('optgroup');
+                chineseGroup.label = `中文字体 (${chineseFonts.length})`;
+                chineseFonts.forEach(font => {
+                    const option = document.createElement('option');
+                    option.value = font;
+                    option.textContent = font;
+                    option.style.fontFamily = `"${font}", sans-serif`;
+                    chineseGroup.appendChild(option);
+                });
+                customFontSelect.appendChild(chineseGroup);
+            }
+
+            if (englishFonts.length > 0) {
+                const englishGroup = document.createElement('optgroup');
+                englishGroup.label = `英文字体 (${englishFonts.length})`;
+                englishFonts.forEach(font => {
+                    const option = document.createElement('option');
+                    option.value = font;
+                    option.textContent = font;
+                    option.style.fontFamily = `"${font}", sans-serif`;
+                    englishGroup.appendChild(option);
+                });
+                customFontSelect.appendChild(englishGroup);
+            }
+
+            // Show custom font section
+            document.getElementById('customFontSection').style.display = 'block';
+
+            btn.textContent = `检测到 ${detectedFonts.length} 个字体`;
+            btn.disabled = false;
+
+            console.log('检测到的字体:', detectedFonts);
+
+            // Reset after 5 seconds
+            setTimeout(() => {
+                btn.textContent = '检测本地字体';
+            }, 5000);
+        }
+
+        function selectCustomFont() {
+            const customFont = document.getElementById('customFontSelect').value;
+            if (customFont) {
+                document.getElementById('customFontInput').value = customFont;
+                applyCustomFont();
+            }
+        }
+
+        function applyCustomFont() {
+            const customFontName = document.getElementById('customFontInput').value.trim();
+            if (customFontName) {
+                // Find the predefined option and select it
+                const fontFamilySelect = document.getElementById('fontFamily');
+                let found = false;
+
+                for (let option of fontFamilySelect.options) {
+                    if (option.value.includes(customFontName)) {
+                        option.selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // If not in predefined options, add it
+                if (!found) {
+                    // Create a new option
+                    const newOption = document.createElement('option');
+                    newOption.value = `'${customFontName}', sans-serif`;
+                    newOption.textContent = customFontName;
+                    newOption.selected = true;
+                    fontFamilySelect.insertBefore(newOption, fontFamilySelect.options[1]);
+                }
+
+                updateBody();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>小红书封面卡片生成器</title>
+    <link
+        href="fonts/fonts.css"
+        rel="stylesheet">
+    <style>
+        /* 布局 */
+        body {
+            display: flex;
+            margin: 0;
+            background: #111;
+            font-family: 'Noto Sans SC', sans-serif;
+            min-height: 100vh;
+        }
+
+        .editor {
+            width: 300px;
+            padding: 24px;
+            background: #1a1a1a;
+            color: #ccc;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .preview {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background-color: #111;
+            /* Add a subtle pattern or gradient to distinguish preview area if needed, sticking to minimal dark for now */
+        }
+
+        /* Editor specifics */
+        h1 {
+            color: #fff;
+            font-size: 20px;
+            margin: 0 0 16px 0;
+            font-weight: normal;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        textarea,
+        input {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: auto;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* 配色选择器容器 */
+        .color-scheme-picker {
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+
+        .color-scheme-picker label {
+            font-size: 10px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* 配色按钮组 */
+        .scheme-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        /* 配色按钮样式 */
+        .scheme-btn {
+            padding: 8px 4px;
+            background: #111;
+            color: #666;
+            border: 1px solid #2a2a2a;
+            border-radius: 2px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.04em;
+        }
+
+        .scheme-btn:hover {
+            border-color: #444;
+            color: #888;
+        }
+
+        .scheme-btn.active {
+            background: #f7f5f1;
+            color: #0d0d0d;
+            border-color: #f7f5f1;
+        }
+
+        /* 卡片样式 */
+        .card {
+            width: 360px;
+            height: 480px;
+            background: var(--card-bg, #0d0d0d);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            /* Ensure padding is included in width/height */
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        /* Background image overlay */
+        .card-bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Background overlay for text readability */
+        .card-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        /* Card content wrapper */
+        .card-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* 主标题 */
+        .card-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--card-title, #f0ede6);
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+            word-break: break-all;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* 副标题 */
+        .card-subtitle {
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 13px;
+            font-weight: 300;
+            color: var(--card-subtitle, #888);
+            line-height: 1.8;
+            margin-top: 18px;
+            word-break: break-all;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 装饰线 */
+        .card-rule {
+            width: 32px;
+            height: 2px;
+            background: var(--card-rule, #2a2a2a);
+            margin-bottom: 18px;
+            border-radius: 1px;
+        }
+
+        /* 装饰文字 */
+        .card-decor {
+            font-size: 10px;
+            color: var(--card-decor, #333);
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-weight: 500;
+        }
+
+        /* Upload zone style */
+        .upload-zone {
+            border: 1px dashed #444;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .upload-zone:hover {
+            border-color: #888;
+            color: #888;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .upload-zone input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 左侧编辑区 -->
+    <aside class="editor">
+        <h1>封面卡片生成器</h1>
+
+        <div>
+            <label>主标题</label>
+            <textarea id="mainTitle" placeholder="你以为的分心
+其实是大脑在保护你"></textarea>
+        </div>
+
+        <div>
+            <label>副标题</label>
+            <textarea id="subtitle" placeholder="一个作家 · 一个囚犯 · 一个皇帝
+跨越2000年给出同一个答案"></textarea>
+        </div>
+
+        <div>
+            <label>装饰文字（可选）</label>
+            <input id="decorText" placeholder="Insight 参考 · 001" />
+        </div>
+
+        <div>
+            <label>字体选择</label>
+            <select id="fontFamily" style="width:100%;background:#2a2a2a;border:1px solid #333;color:#fff;padding:10px 12px;border-radius:4px;font-family:inherit;font-size:14px;" onchange="updatePreview()">
+                <option value="'Noto Serif SC', serif">Noto Serif SC (默认)</option>
+                <option value="'Noto Sans SC', sans-serif">Noto Sans SC</option>
+                <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                <option value="'SimSun', serif">宋体</option>
+                <option value="'SimHei', sans-serif">黑体</option>
+                <option value="'KaiTi', serif">楷体</option>
+                <option value="'FangSong', serif">仿宋</option>
+                <option value="sans-serif">系统默认无衬线</option>
+                <option value="serif">系统默认衬线</option>
+            </select>
+        </div>
+
+        <div>
+            <label>背景图片（可选）</label>
+            <div class="upload-zone" id="coverBgUploadZone">
+                <input type="file" accept="image/*" id="coverBgInput" onchange="handleBgUpload(event)">
+                <span>点击上传背景图片</span>
+            </div>
+            <button onclick="removeBgImage()" style="width:100%;background:#333;color:#aaa;border:1px solid #444;padding:6px;border-radius:4px;cursor:pointer;font-size:11px;margin-top:4px;display:none;" id="removeBgBtn">移除背景图片</button>
+        </div>
+
+        <div class="color-scheme-picker">
+            <label>配色方案</label>
+            <div class="scheme-buttons">
+                <button class="scheme-btn active" data-scheme="blackPure">纯黑</button>
+                <button class="scheme-btn" data-scheme="blueDark">深蓝</button>
+                <button class="scheme-btn" data-scheme="coffeePaper">咖啡</button>
+                <button class="scheme-btn" data-scheme="greenMist">松绿</button>
+                <button class="scheme-btn" data-scheme="purpleTwilight">暮紫</button>
+                <button class="scheme-btn" data-scheme="paperLight">米纸</button>
+            </div>
+        </div>
+
+        <div>
+            <label>自定义背景色</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="customCoverBgColor" value="#0d0d0d" style="width:50px;height:32px;border:1px solid #333;background:#2a2a2a;cursor:pointer;" onchange="updateCoverCustomColor()">
+                <input type="text" id="customCoverBgColorText" value="#0d0d0d" placeholder="#0d0d0d" style="flex:1;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;" oninput="syncCoverColorInput('bg')">
+                <button onclick="resetCoverBgColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
+            </div>
+        </div>
+
+        <div>
+            <label>自定义标题色</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="customCoverTitleColor" value="#f0ede6" style="width:50px;height:32px;border:1px solid #333;background:#2a2a2a;cursor:pointer;" onchange="updateCoverCustomColor()">
+                <input type="text" id="customCoverTitleColorText" value="#f0ede6" placeholder="#f0ede6" style="flex:1;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;" oninput="syncCoverColorInput('title')">
+                <button onclick="resetCoverTitleColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
+            </div>
+        </div>
+
+        <div>
+            <label>自定义副标题色</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="customCoverSubColor" value="#888888" style="width:50px;height:32px;border:1px solid #333;background:#2a2a2a;cursor:pointer;" onchange="updateCoverCustomColor()">
+                <input type="text" id="customCoverSubColorText" value="#888888" placeholder="#888888" style="flex:1;background:#2a2a2a;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:4px;font-size:13px;" oninput="syncCoverColorInput('sub')">
+                <button onclick="resetCoverSubColor()" style="padding:8px 12px;background:#333;color:#aaa;border:none;border-radius:4px;cursor:pointer;font-size:12px;">重置</button>
+            </div>
+        </div>
+
+        <button onclick="exportCard()">↓ 导出 PNG (1080×1440)</button>
+    </aside>
+
+    <!-- 右侧预览区 -->
+    <main class="preview">
+        <div class="card" id="cardPreview">
+            <!-- 动态生成内容 -->
+        </div>
+    </main>
+
+    <script src="lib/html2canvas.min.js"></script>
+    <script>
+        // 配色方案数据
+        const COLOR_SCHEMES = {
+            blackPure: {
+                name: '纯黑极简',
+                bg: '#0d0d0d',
+                title: '#f0ede6',
+                subtitle: '#888888',
+                rule: '#2a2a2a',
+                decor: '#333333'
+            },
+            blueDark: {
+                name: '深蓝墨水',
+                bg: '#1a1a2e',
+                title: '#eaeaea',
+                subtitle: '#a8b2d1',
+                rule: '#16213e',
+                decor: '#3d405b'
+            },
+            coffeePaper: {
+                name: '咖啡纸张',
+                bg: '#2d2424',
+                title: '#f8f5f1',
+                subtitle: '#c4a77d',
+                rule: '#3d3030',
+                decor: '#70564f'
+            },
+            greenMist: {
+                name: '松石绿幕',
+                bg: '#1e3a3a',
+                title: '#f4f9f4',
+                subtitle: '#a7bfb8',
+                rule: '#2c5f5f',
+                decor: '#4a7c7c'
+            },
+            purpleTwilight: {
+                name: '暮光紫灰',
+                bg: '#2b2b3f',
+                title: '#ece8df',
+                subtitle: '#b8a9c9',
+                rule: '#3e3e54',
+                decor: '#5e5e7a'
+            },
+            paperLight: {
+                name: '米纸留白',
+                bg: '#f9f7f3',
+                title: '#1a1a1a',
+                subtitle: '#5f5f5f',
+                rule: '#d8d4cc',
+                decor: '#a8a49a'
+            }
+        };
+
+        // 当前选中的配色方案（默认纯黑）
+        let currentScheme = 'blackPure';
+        let customBgColor = null;
+        let customTitleColor = null;
+        let customSubColor = null;
+        let coverBgImage = null;
+
+        // 应用配色方案到卡片
+        function applyColorScheme(schemeName) {
+            const scheme = COLOR_SCHEMES[schemeName];
+            if (!scheme) return;
+
+            currentScheme = schemeName;
+
+            // Reset custom colors when switching schemes
+            customBgColor = null;
+            customTitleColor = null;
+            customSubColor = null;
+
+            // Update color inputs
+            document.getElementById('customCoverBgColor').value = scheme.bg;
+            document.getElementById('customCoverBgColorText').value = scheme.bg;
+            document.getElementById('customCoverTitleColor').value = scheme.title;
+            document.getElementById('customCoverTitleColorText').value = scheme.title;
+            document.getElementById('customCoverSubColor').value = scheme.subtitle;
+            document.getElementById('customCoverSubColorText').value = scheme.subtitle;
+
+            // 更新 CSS 变量（推荐方式）
+            const card = document.getElementById('cardPreview');
+            card.style.setProperty('--card-bg', scheme.bg);
+            card.style.setProperty('--card-title', scheme.title);
+            card.style.setProperty('--card-subtitle', scheme.subtitle);
+            card.style.setProperty('--card-rule', scheme.rule);
+            card.style.setProperty('--card-decor', scheme.decor);
+
+            // 更新按钮激活状态
+            document.querySelectorAll('.scheme-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.scheme === schemeName) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // 保存到 localStorage（可选，记住用户选择）
+            localStorage.setItem('selectedScheme', schemeName);
+
+            updatePreview();
+        }
+
+        // 实时预览更新
+        function updatePreview() {
+            const mainTitle = document.getElementById('mainTitle').value || '输入主标题';
+            const subtitle = document.getElementById('subtitle').value || '输入副标题';
+            const decorText = document.getElementById('decorText').value || '';
+            const fontFamily = document.getElementById('fontFamily').value;
+
+            const scheme = COLOR_SCHEMES[currentScheme];
+            const bg = customBgColor || scheme.bg;
+            const titleColor = customTitleColor || scheme.title;
+            const subColor = customSubColor || scheme.subtitle;
+
+            let bgImageHTML = '';
+            if (coverBgImage) {
+                bgImageHTML = `
+                    <img src="${coverBgImage}" class="card-bg-image" crossorigin="anonymous">
+                    <div class="card-bg-overlay"></div>
+                `;
+            }
+
+            const card = document.getElementById('cardPreview');
+            card.innerHTML = `
+                ${bgImageHTML}
+                <div class="card-content" style="font-family:${fontFamily};">
+                    <div>
+                        <div class="card-rule" style="background:${scheme.rule};"></div>
+                        ${decorText ? `<div class="card-decor" style="color:${scheme.decor};">${escapeHtml(decorText)}</div>` : ''}
+                        <div style="height: ${decorText ? '16px' : '0'}"></div>
+                        <div class="card-title" style="color:${titleColor};">${escapeHtml(mainTitle).replace(/\n/g, '<br>')}</div>
+                        ${subtitle ? `<div class="card-subtitle" style="color:${subColor};">${escapeHtml(subtitle).replace(/\n/g, '<br>')}</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            card.style.setProperty('--card-bg', bg);
+            card.style.setProperty('--card-title', titleColor);
+            card.style.setProperty('--card-subtitle', subColor);
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 背景图片上传
+        function handleBgUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                coverBgImage = e.target.result;
+                document.getElementById('removeBgBtn').style.display = 'block';
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        // 移除背景图片
+        function removeBgImage() {
+            coverBgImage = null;
+            document.getElementById('coverBgInput').value = '';
+            document.getElementById('removeBgBtn').style.display = 'none';
+            updatePreview();
+        }
+
+        // 自定义颜色函数
+        function updateCoverCustomColor() {
+            const bgColorInput = document.getElementById('customCoverBgColor');
+            const titleColorInput = document.getElementById('customCoverTitleColor');
+            const subColorInput = document.getElementById('customCoverSubColor');
+            const bgColorText = document.getElementById('customCoverBgColorText');
+            const titleColorText = document.getElementById('customCoverTitleColorText');
+            const subColorText = document.getElementById('customCoverSubColorText');
+
+            // Update text inputs to match color picker
+            bgColorText.value = bgColorInput.value;
+            titleColorText.value = titleColorInput.value;
+            subColorText.value = subColorInput.value;
+
+            // Set custom colors
+            customBgColor = bgColorInput.value;
+            customTitleColor = titleColorInput.value;
+            customSubColor = subColorInput.value;
+
+            updatePreview();
+        }
+
+        function syncCoverColorInput(type) {
+            if (type === 'bg') {
+                const textInput = document.getElementById('customCoverBgColorText');
+                const colorInput = document.getElementById('customCoverBgColor');
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    colorInput.value = textInput.value;
+                    customBgColor = textInput.value;
+                    updatePreview();
+                }
+            } else if (type === 'title') {
+                const textInput = document.getElementById('customCoverTitleColorText');
+                const colorInput = document.getElementById('customCoverTitleColor');
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    colorInput.value = textInput.value;
+                    customTitleColor = textInput.value;
+                    updatePreview();
+                }
+            } else if (type === 'sub') {
+                const textInput = document.getElementById('customCoverSubColorText');
+                const colorInput = document.getElementById('customCoverSubColor');
+                if (/^#[0-9A-Fa-f]{6}$/.test(textInput.value)) {
+                    colorInput.value = textInput.value;
+                    customSubColor = textInput.value;
+                    updatePreview();
+                }
+            }
+        }
+
+        function resetCoverBgColor() {
+            const scheme = COLOR_SCHEMES[currentScheme];
+            document.getElementById('customCoverBgColor').value = scheme.bg;
+            document.getElementById('customCoverBgColorText').value = scheme.bg;
+            customBgColor = null;
+            updatePreview();
+        }
+
+        function resetCoverTitleColor() {
+            const scheme = COLOR_SCHEMES[currentScheme];
+            document.getElementById('customCoverTitleColor').value = scheme.title;
+            document.getElementById('customCoverTitleColorText').value = scheme.title;
+            customTitleColor = null;
+            updatePreview();
+        }
+
+        function resetCoverSubColor() {
+            const scheme = COLOR_SCHEMES[currentScheme];
+            document.getElementById('customCoverSubColor').value = scheme.subtitle;
+            document.getElementById('customCoverSubColorText').value = scheme.subtitle;
+            customSubColor = null;
+            updatePreview();
+        }
+
+        // 导出PNG
+        async function exportCard() {
+            const card = document.getElementById('cardPreview');
+            try {
+                const canvas = await html2canvas(card, {
+                    scale: 3,
+                    backgroundColor: null,
+                    logging: false,
+                    width: 360,
+                    height: 480,
+                    useCORS: true
+                });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                saveBlob(blob, `xhs-cover-${Date.now()}.png`);
+            } catch (err) {
+                console.error("Export failed:", err);
+                alert("导出失败，请查看控制台错误信息");
+            }
+        }
+
+        // Robust download helper
+        function saveBlob(blob, filename) {
+            if (navigator.msSaveBlob) { navigator.msSaveBlob(blob, filename); return; }
+
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isFileProto = location.protocol === 'file:';
+
+            if ((isSafari || isFileProto) && blob.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const w = window.open('');
+                    if (w) {
+                        w.document.write(`<html><head><title>${filename}</title></head>
+                        <body style="margin:0;display:flex;justify-content:center;align-items:center;
+                        min-height:100vh;background:#111;">
+                        <img src="${reader.result}" style="max-width:100%;max-height:100vh;">
+                        <p style="position:fixed;top:8px;left:50%;transform:translateX(-50%);
+                        color:#fff;font:13px system-ui;background:rgba(0,0,0,0.7);padding:6px 16px;
+                        border-radius:8px;">右键图片 → 存储图像 即可保存</p>
+                        </body></html>`);
+                        w.document.close();
+                    }
+                };
+                reader.readAsDataURL(blob);
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 1000);
+        }
+
+        // 监听输入变化
+        document.getElementById('mainTitle').addEventListener('input', updatePreview);
+        document.getElementById('subtitle').addEventListener('input', updatePreview);
+        document.getElementById('decorText').addEventListener('input', updatePreview);
+        document.getElementById('fontFamily').addEventListener('change', updatePreview);
+
+        // 初始化配色按钮事件
+        function initColorScheme() {
+            document.querySelectorAll('.scheme-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const scheme = this.dataset.scheme;
+                    applyColorScheme(scheme);
+                });
+            });
+
+            // 尝试从 localStorage 恢复用户上次选择
+            const savedScheme = localStorage.getItem('selectedScheme');
+            if (savedScheme && COLOR_SCHEMES[savedScheme]) {
+                applyColorScheme(savedScheme);
+            } else {
+                applyColorScheme('blackPure');
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initColorScheme();
+            updatePreview();
+        });
+    </script>
+</body>
+
+</html>
